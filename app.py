@@ -1,17 +1,10 @@
 from operator import truediv
 
 from flask import Flask, render_template, request, redirect
+from modules.load_file import load_data, save_data
 import pandas as pd
 import os
-
 app = Flask(__name__)
-DATA_PATH = "data/heart.csv"
-
-def load_data():
-    return pd.read_csv(DATA_PATH)
-
-def save_data(df):
-    df.to_csv(DATA_PATH, index=False)
 
 @app.route("/")
 def index():
