@@ -9,12 +9,12 @@ app = Flask(__name__)
 @app.route("/")
 def index():
     df = load_data()
-
     sort_by = request.args.get('sort_by')
     sort_order  = request.args.get('sort_order','asc')
     if not df.empty and sort_by and sort_by in df.columns:
         ascending = True if sort_order == 'asc' else False
         df = df.sort_values(by=sort_by, ascending=ascending)
+
 
     return render_template("index.html",
                            data=df.to_dict(orient='records'),

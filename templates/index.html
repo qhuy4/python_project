@@ -2,25 +2,64 @@
 <html lang="en">
   <head>
     <title>Heart Dataset</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+      .filter-input {
+          height: calc(1em + 0.75rem + 2px);
+          padding: 0.25rem 0.5rem;
+          font-size: 0.8rem;
+          line-height: 1.5;
+      }
 
+      .table thead th {
+          white-space: normal;
+          word-wrap: break-word;
+          vertical-align: top;
+          text-align: left;
+      }
+
+      .table thead th > div {
+          min-width: 0;
+      }
+
+      .table thead th .d-flex.align-items-center.text-white .bi {
+          flex-shrink: 0;
+      }
+
+      .action-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      .action-header .btn {
+          margin-top: 0.5rem;
+      }
+    </style>
   </head>
   <body class="container mt-4">
-    <h1 class="mb-4">Heart Disease Dataset</h1>
-
-    <form class="row g-3 mb-4" method="post" action="/create">
-      {% for col in data[0].keys() %}
-        <div class="col-md-3">
-          <input name="{{ col }}" class="form-control" placeholder="{{ col }}">
-        </div>
-      {% endfor %}
-      <div class="col-12">
-        <button class="btn btn-primary" type="submit">Add Record</button>
+    <div class="container">
+      <div>
+            <h1 class="mb-4">Heart Disease Dataset</h1>
       </div>
-    </form>
+      <div>
+        <form class="row g-3 mb-4" method="post" action="/create">
+          {% for col in data[0].keys() %}
+          <div class="col-md-3">
+            <input name="{{ col }}" class="form-control" placeholder="{{ col }}">
+          </div>
+          {% endfor %}
+          <div class="col-12">
+            <button class="btn btn-primary" type="submit">Add Record</button>
+          </div>
+        </form>
+      </div>
+    </div>
 
-    <table class="table table-bordered table-striped">
+    <table class="table table-bordered table-striped table-responsive">
       <thead class="table-dark">
         <tr>
           {% for col in data[0].keys() %}
@@ -43,7 +82,9 @@
             </div>
           </th>
           {% endfor %}
-          <th>Action</th>
+          <th class="action-header">
+            Action
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -60,5 +101,7 @@
         {% endfor %}
       </tbody>
     </table>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
