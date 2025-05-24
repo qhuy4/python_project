@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Thống kê bệnh tim</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .chart-card {
+      margin-bottom: 2rem;
+    }
+    .chart-img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-5">
+    <h1 class="text-center mb-4">Thống kê dữ liệu bệnh tim</h1>
+
+    <div class="row">
+      {% for title, chart in charts %}
+        <div class="col-md-6 chart-card">
+          <div class="card shadow-sm">
+            <div class="card-header text-bg-primary">
+              <h5 class="card-title mb-0 text-white">{{ title }}</h5>
+            </div>
+            <div class="card-body">
+              <img src="data:image/png;base64,{{ chart }}" alt="{{ title }}" class="chart-img">
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="text-center mt-4">
+      <a href="/" class="btn btn-outline-primary">← Quay lại trang chính</a>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
