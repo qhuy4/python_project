@@ -1,52 +1,50 @@
 <!doctype html>
 <html lang="en">
-<head>
+  <head>
     <title>Heart Dataset</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-</head>
-<body class="container mt-4">
-<h1 class="mb-4">Heart Disease Dataset</h1>
+  </head>
+  <body class="container mt-4">
+    <h1 class="mb-4">Heart Disease Dataset</h1>
 
-<form class="row g-3 mb-4" method="post" action="/create">
-    {% for col in data[0].keys() %}
-    <div class="col-md-3">
-        <input name="{{ col }}" class="form-control" placeholder="{{ col }}">
-    </div>
-    {% endfor %}
-    <div class="col-12">
+    <form class="row g-3 mb-4" method="post" action="/create">
+      {% for col in data[0].keys() %}
+        <div class="col-md-3">
+          <input name="{{ col }}" class="form-control" placeholder="{{ col }}">
+        </div>
+      {% endfor %}
+      <div class="col-12">
         <button class="btn btn-primary" type="submit">Add Record</button>
-        <a class="btn btn-primary" href="/chart">Xem thống kê</a>
-    </div>
-</form>
+      </div>
+    </form>
 
-<table class="table table-bordered table-striped">
-    <thead class="table-dark">
-    <tr>
-        {% for col in data[0].keys() %}
-        <th>
+    <table class="table table-bordered table-striped">
+      <thead class="table-dark">
+        <tr>
+          {% for col in data[0].keys() %}
+          <th>
             <div class="d-flex flex-column align-items-start">
-                <a href="?sort_by={{ col }}&sort_order={% if current_sort_by == col and current_sort_order == 'asc' %}desc{% else %}asc{% endif %}"
-                   class="d-flex align-items-center text-white text-decoration-none mb-1">
-                    {{ col | replace('_', ' ') | title }}
-                    {% if current_sort_by == col %}
-                    {% if current_sort_order == 'asc' %}
+              <a href="?sort_by={{ col }}&sort_order={% if current_sort_by == col and current_sort_order == 'asc' %}desc{% else %}asc{% endif %}"
+                 class="d-flex align-items-center text-white text-decoration-none mb-1">
+                {{ col | replace('_', ' ') | title }}
+                {% if current_sort_by == col %}
+                  {% if current_sort_order == 'asc' %}
                     <i class="bi bi-caret-up-fill ms-1"></i>
-                    {% else %}
+                  {% else %}
                     <i class="bi bi-caret-down-fill ms-1"></i>
-                    {% endif %}
-                    {% else %}
-                    <i class="bi bi-caret-down ms-1 text-secondary opacity-50"></i>
-                    {% endif %}
-                </a>
-                <input type="number" class="form-control w-100 filter-input" name="filter_{{ col }}"
-                       value="{{ request.args.get('filter_' + col, '') }}">
+                  {% endif %}
+                {% else %}
+                <i class="bi bi-caret-down ms-1 text-secondary opacity-50"></i>
+                {% endif %}
+              </a>
+              <input type="number" class="form-control w-100 filter-input" name="filter_{{ col }}" value="{{ request.args.get('filter_' + col, '') }}">
             </div>
-        </th>
-        {% endfor %}
-        <th>Action</th>
-    </tr>
+          </th>
+          {% endfor %}
+          <th>Action</th>
+        </tr>
     </thead>
     <tbody>
     {% for row in data %}

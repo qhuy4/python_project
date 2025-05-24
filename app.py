@@ -12,6 +12,22 @@ app = Flask(__name__)
 @app.route("/")
 def index():
     df = load_data()
+    filtered_df = df.copy()
+
+    # Lọc dữ liệu
+    for col_name in df.columns:
+        filter_value = request.args.get(f'filter_{col_name}', '').strip()
+        if filter_value:
+            if pd.api.types.is_numeric_dtype(filtered_df[col_name]):
+                try:
+                    num_filter_value = pd.to_numeric(filter_value)
+                    filtered_df = filtered_df[filtered_df[col_name] == num_filter_value]
+                except ValueError:
+                    pass
+        else:
+            filtered_df = filtered_df[
+                filtered_df[col_name].astype(str).str.contains(filter_value, case=False, na=False)
+            ]
 
     # Sắp xếp nếu có yêu cầu
     sort_by = request.args.get('sort_by')
@@ -28,6 +44,7 @@ def index():
     start = (page - 1) * per_page
     end = start + per_page
     df_page = df.iloc[start:end]
+
 
     return render_template("index.html",
                            data=df_page.to_dict(orient='records'),

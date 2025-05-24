@@ -2,13 +2,13 @@
 import pandas as pd
 
 COLUMNS = [
-    "Tuổi", "Giới tính", "Đau ngực \nLoại:(0-3)",
-    "Huyết áp (mmHg)", "Cholesterol (mg/dl)",
-    "Đường huyết \n(> 120mg/dl) ", "ECG (0–2)",
-    "Nhịp tim tối đa", "Đau ngực",
-    "Độ chênh ST", "Dốc ST (0–2)",
+    "Tuổi", "Giới tính (0: Nữ, 1: Nam)", "Loại đau ngực (0-3)",
+    "Huyết áp nghỉ (mmHg)", "Cholesterol toàn phần (mg/dl)",
+    "Đường huyết đói > 120mg/dl (1: Có)", "ECG lúc nghỉ (0–2)",
+    "Nhịp tim tối đa", "Đau ngực khi gắng sức (1: Có)",
+    "Độ chênh ST khi gắng sức", "Dốc ST sau gắng sức (0–2)",
     "Số mạch vành bị tắc (0–3)", "Thalassemia (1–3)",
-    "Kết quả"
+    "Kết quả chẩn đoán (1: Mắc bệnh tim)"
 ]
 
 DATA_PATH = "data/processed.cleveland.data"
