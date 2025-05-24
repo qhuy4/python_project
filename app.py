@@ -1,3 +1,5 @@
+from operator import truediv
+
 from flask import Flask, render_template, request, redirect
 import pandas as pd
 import os
@@ -14,7 +16,21 @@ def save_data(df):
 @app.route("/")
 def index():
     df = load_data()
-    return render_template("index.html", data=df.to_dict(orient="records"))
+
+    sort_by = request.args.get('sort_by')
+    sort_order  = request.args.get('sort_order','asc')
+    if not df.empty and sort_by and sort_by in df.columns:
+        ascending = True if sort_order == 'asc' else False
+        df = df.sort_values(by=sort_by, ascending=ascending)
+
+    return render_template("index.html",
+                           data=df.to_dict(orient='records'),
+                           columns=df.columns.tolist(),
+                           current_sort_by=sort_by,
+                           current_sort_order=sort_order
+                           )
+
+    #return render_template("index.html", data=df.to_dict(orient="records"))
 
 @app.route("/create", methods=["POST"])
 def create():
