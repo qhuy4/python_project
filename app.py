@@ -1,4 +1,5 @@
 from operator import truediv
+from math import ceil
 
 from flask import Flask, render_template, request, redirect
 from modules.load_file import load_data, save_data
@@ -7,34 +8,94 @@ import os
 import matplotlib.pyplot as plt
 import io
 import base64
+
 app = Flask(__name__)
+
+@app.template_filter('custom_column_name')
+def custom_column_name_filter(col_name):
+    name_map = {
+        'Age': 'Tuổi', 'Sex': 'Giới Tính', 'Cp': 'Loại Đau Ngực', 'Trestbps': 'Huyết Áp Nghỉ',
+        'Chol': 'Cholesterol', 'Fbs': 'Đường Huyết Đói', 'Restecg': 'ECG Lúc Nghỉ',
+        'Thalach': 'Nhịp Tim Tối Đa', 'Exang': 'Đau Ngực Khi Gắng Sức', 'Oldpeak': 'ST Chênh Lệch',
+        'Slope': 'Dốc ST Gắng Sức', 'Ca': 'Số Mạch Vành Tắc', 'Thal': 'Thalassemia',
+        'Target': 'Kết Quả Chẩn Đoán'
+    }
+    return name_map.get(col_name, col_name)
+
+@app.template_filter('custom_cell_value')
+def custom_cell_value_filter(value, col_name):
+    # ... (đảm bảo hàm này có đầy đủ như phiên bản tôi đã cung cấp)
+    if col_name == 'Sex' or col_name == 'Giới tính':
+        if value == 0: return 'Nữ'
+        elif value == 1: return 'Nam'
+        return value
+    elif col_name == 'Fbs' or col_name == 'Đường huyết đói':
+        return 'Có' if value == 1 else 'Không' if value == 0 else value
+    elif col_name == 'Target' or col_name == 'Kết quả chẩn đoán':
+        return 'Mắc Bệnh Tim' if value == 1 else 'Không Mắc Bệnh Tim' if value == 0 else value
+    elif col_name == 'Cp' or col_name == 'Loại đau ngực':
+        if value == 0: return 'Điển hình đau thắt ngực'
+        elif value == 1: return 'Đau thắt ngực không điển hình'
+        elif value == 2: return 'Đau không đau thắt ngực'
+        elif value == 3: return 'Không đau'
+        return value
+    elif col_name == 'Restecg' or col_name == 'ECG lúc nghỉ':
+        if value == 0: return 'Bình thường'
+        elif value == 1: return 'Có bất thường ST-T'
+        elif value == 2: return 'Phì đại thất trái'
+        return value
+    elif col_name == 'Exang' or col_name == 'Đau ngực khi gắng sức':
+        return 'Có' if value == 1 else 'Không' if value == 0 else value
+    elif col_name == 'Slope' or col_name == 'Dốc ST gắng sức':
+        if value == 0: return 'Lên dốc'
+        elif value == 1: return 'Phẳng'
+        elif value == 2: return 'Dốc xuống'
+        return value
+    elif col_name == 'Ca' or col_name == 'Số mạch vành tắc':
+        if value == 0: return '0 mạch'
+        elif value == 1: return '1 mạch'
+        elif value == 2: return '2 mạch'
+        elif value == 3: return '3 mạch'
+        elif value == 4: return 'Không xác định'
+        return value
+    elif col_name == 'Thal' or col_name == 'Thalassemia':
+        if value == 1: return 'Bình thường'
+        elif value == 2: return 'Khiếm khuyết cố định'
+        elif value == 3: return 'Khiếm khuyết có thể đảo ngược'
+        return value
+    return value
 
 @app.route("/")
 def index():
     df = load_data()
-    filtered_df = df.copy()
 
-    # Lọc dữ liệu
+    # lọc dữ liệu
     for col_name in df.columns:
         filter_value = request.args.get(f'filter_{col_name}', '').strip()
+
         if filter_value:
-            if pd.api.types.is_numeric_dtype(filtered_df[col_name]):
+            if pd.api.types.is_numeric_dtype(df[col_name]):
                 try:
                     num_filter_value = pd.to_numeric(filter_value)
-                    filtered_df = filtered_df[filtered_df[col_name] == num_filter_value]
+                    df = df[df[col_name] == num_filter_value]
                 except ValueError:
                     pass
-        else:
-            filtered_df = filtered_df[
-                filtered_df[col_name].astype(str).str.contains(filter_value, case=False, na=False)
-            ]
+            else:
+                df = df[
+                    df[col_name].astype(str).str.contains(filter_value, case=False, na=False)
+                ]
 
-    # Sắp xếp nếu có yêu cầu
+    # sort nếu có yêu cầu
     sort_by = request.args.get('sort_by')
     sort_order = request.args.get('sort_order', 'asc')
+
     if not df.empty and sort_by and sort_by in df.columns:
         ascending = True if sort_order == 'asc' else False
-        df = df.sort_values(by=sort_by, ascending=ascending)
+        if pd.api.types.is_numeric_dtype(df[sort_by]):
+            df[sort_by] = pd.to_numeric(df[sort_by], errors='coerce')
+            df = df.sort_values(by=sort_by, ascending=ascending, na_position='last')
+        else:
+            df = df.sort_values(by=sort_by, ascending=ascending)
 
     # Phân trang
     page = int(request.args.get('page', 1))
@@ -44,7 +105,6 @@ def index():
     start = (page - 1) * per_page
     end = start + per_page
     df_page = df.iloc[start:end]
-
 
     return render_template("index.html",
                            data=df_page.to_dict(orient='records'),

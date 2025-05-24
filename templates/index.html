@@ -15,92 +15,97 @@
           <input name="{{ col }}" class="form-control" placeholder="{{ col }}">
         </div>
       {% endfor %}
-      <div class="col-12">
-        <button class="btn btn-primary" type="submit">Add Record</button>
+      <div class="col-12 d-flex justify-content-start ">
+          <button class="btn btn-primary" type="submit">Add Record</button>
       </div>
     </form>
-
-    <table class="table table-bordered table-striped">
-      <thead class="table-dark">
-        <tr>
-          {% for col in data[0].keys() %}
-          <th>
-            <div class="d-flex flex-column align-items-start">
-              <a href="?sort_by={{ col }}&sort_order={% if current_sort_by == col and current_sort_order == 'asc' %}desc{% else %}asc{% endif %}"
-                 class="d-flex align-items-center text-white text-decoration-none mb-1">
-                {{ col | replace('_', ' ') | title }}
-                {% if current_sort_by == col %}
-                  {% if current_sort_order == 'asc' %}
-                    <i class="bi bi-caret-up-fill ms-1"></i>
+    <form method="get" action="/">
+        <div class="col-12 d-flex justify-content-end ms-auto">
+          <button type="submit" class="btn btn-info btn-sm text-left me-3">Áp dụng</button>
+          <a href="/" class="btn btn-secondary btn-sm">Xóa Lọc</a>
+        </div>
+      <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+          <tr>
+            {% for col in data[0].keys() %}
+            <th>
+              <div class="d-flex flex-column align-items-start">
+                <a href="?sort_by={{ col }}&sort_order={% if current_sort_by == col and current_sort_order == 'asc' %}desc{% else %}asc{% endif %}"
+                   class="d-flex align-items-center text-white text-decoration-none mb-1">
+                  {{ col | replace('_', ' ') | title }}
+                  {% if current_sort_by == col %}
+                    {% if current_sort_order == 'asc' %}
+                      <i class="bi bi-caret-up-fill ms-1"></i>
+                    {% else %}
+                      <i class="bi bi-caret-down-fill ms-1"></i>
+                    {% endif %}
                   {% else %}
-                    <i class="bi bi-caret-down-fill ms-1"></i>
+                  <i class="bi bi-caret-down ms-1 text-secondary opacity-50"></i>
                   {% endif %}
-                {% else %}
-                <i class="bi bi-caret-down ms-1 text-secondary opacity-50"></i>
-                {% endif %}
-              </a>
-              <input type="number" class="form-control w-100 filter-input" name="filter_{{ col }}" value="{{ request.args.get('filter_' + col, '') }}">
-            </div>
-          </th>
-          {% endfor %}
-          <th>Action</th>
+                </a>
+                <input type="number" class="form-control w-100 filter-input" name="filter_{{ col }}" value="{{ request.args.get('filter_' + col) }}">
+              </div>
+            </th>
+            {% endfor %}
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for row in data %}
+        <tr>
+            {% for value in row.values() %}
+            <td>{{ value }}</td>
+            {% endfor %}
+            <td>
+                <a href="/edit/{{ loop.index0 }}" class="btn btn-sm btn-warning">Edit</a>
+                <a href="/delete/{{ loop.index0 }}" class="btn btn-sm btn-danger">Delete</a>
+            </td>
         </tr>
-    </thead>
-    <tbody>
-    {% for row in data %}
-    <tr>
-        {% for value in row.values() %}
-        <td>{{ value }}</td>
         {% endfor %}
-        <td>
-            <a href="/edit/{{ loop.index0 }}" class="btn btn-sm btn-warning">Edit</a>
-            <a href="/delete/{{ loop.index0 }}" class="btn btn-sm btn-danger">Delete</a>
-        </td>
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
-<nav aria-label="Page navigation" class="mt-4">
-    <ul class="pagination justify-content-center">
+        </tbody>
+      </table>
+    </form>
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
 
-        {% if current_page > 1 %}
-        <li class="page-item">
-            <a class="page-link"
-               href="?page={{ current_page - 1 }}&sort_by={{ current_sort_by }}&sort_order={{ current_sort_order }}">‹</a>
-        </li>
-        {% endif %}
+            {% if current_page > 1 %}
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ current_page - 1 }}&sort_by={{ current_sort_by }}&sort_order={{ current_sort_order }}">‹</a>
+            </li>
+            {% endif %}
 
-        {% if current_page > 3 %}
-        <li class="page-item"><a class="page-link"
-                                 href="?page=1&sort_by={{ current_sort_by }}&sort_order={{ current_sort_order }}">1</a>
-        </li>
-        <li class="page-item disabled"><span class="page-link">...</span></li>
-        {% endif %}
+            {% if current_page > 3 %}
+            <li class="page-item"><a class="page-link"
+                                     href="?page=1&sort_by={{ current_sort_by }}&sort_order={{ current_sort_order }}">1</a>
+            </li>
+            <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
 
-        {% for p in range(current_page - 1, current_page + 2) %}
-        {% if 1 <= p <= total_pages %}
-        <li class="page-item {% if p == current_page %}active{% endif %}">
-            <a class="page-link" href="?page={{ p }}&sort_by={{ current_sort_by }}&sort_order={{ current_sort_order }}">{{
-                p }}</a>
-        </li>
-        {% endif %}
-        {% endfor %}
+            {% for p in range(current_page - 1, current_page + 2) %}
+            {% if 1 <= p <= total_pages %}
+            <li class="page-item {% if p == current_page %}active{% endif %}">
+                <a class="page-link" href="?page={{ p }}&sort_by={{ current_sort_by }}&sort_order={{ current_sort_order }}">{{
+                    p }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
 
-        {% if current_page < total_pages - 2 %}
-        <li class="page-item disabled"><span class="page-link">...</span></li>
-        <li class="page-item"><a class="page-link"
-                                 href="?page={{ total_pages }}&sort_by={{ current_sort_by }}&sort_order={{ current_sort_order }}">{{
-            total_pages }}</a></li>
-        {% endif %}
+            {% if current_page < total_pages - 2 %}
+            <li class="page-item disabled"><span class="page-link">...</span></li>
+            <li class="page-item"><a class="page-link"
+                                     href="?page={{ total_pages }}&sort_by={{ current_sort_by }}&sort_order={{ current_sort_order }}">{{
+                total_pages }}</a></li>
+            {% endif %}
 
-        {% if current_page < total_pages %}
-        <li class="page-item">
-            <a class="page-link"
-               href="?page={{ current_page + 1 }}&sort_by={{ current_sort_by }}&sort_order={{ current_sort_order }}">›</a>
-        </li>
-        {% endif %}
+            {% if current_page < total_pages %}
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ current_page + 1 }}&sort_by={{ current_sort_by }}&sort_order={{ current_sort_order }}">›</a>
+            </li>
+            {% endif %}
 
-    </ul>
-</nav>
-</body>
+        </ul>
+    </nav>
+  </body>
 </html>
