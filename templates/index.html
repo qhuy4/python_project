@@ -1,45 +1,45 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <title>Heart Dataset</title>
+<head>
+    <title>>Quản lý hồ sơ bệnh tim</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  </head>
-  <body class="container mt-4">
-    <h1 class="mb-4">Heart Disease Dataset</h1>
+</head>
+<body class="container mt-4">
+<h1 class="mb-4">Danh sách hồ sơ</h1>
 
-    <form class="row g-3 mb-4" method="post" action="/create">
-      {% for col in data[0].keys() %}
-        <div class="col-md-3">
-          <input name="{{ col }}" class="form-control" placeholder="{{ col }}">
-        </div>
-      {% endfor %}
-      <div class="col-12">
-        <button class="btn btn-primary" type="submit">Add Record</button>
-      </div>
-    </form>
-
-    <table class="table table-bordered table-striped">
-      <thead class="table-dark">
-        <tr>
-          {% for col in data[0].keys() %}
-            <th>{{ col }}</th>
-          {% endfor %}
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for row in data %}
-        <tr>
-          {% for value in row.values() %}
-            <td>{{ value }}</td>
-          {% endfor %}
-          <td>
-            <a href="/edit/{{ loop.index0 }}" class="btn btn-sm btn-warning">Edit</a>
-            <a href="/delete/{{ loop.index0 }}" class="btn btn-sm btn-danger">Delete</a>
-          </td>
-        </tr>
+<form class="row g-3 mb-4" method="post" action="/create">
+    {% for col in data[0].keys() %}
+    <div class="col-md-3">
+        <input name="{{ col }}" class="form-control" placeholder="{{ col }}">
+    </div>
+    {% endfor %}
+    <div class="col-12">
+        <button class="btn btn-primary" type="submit">Thêm Dữ liệu</button>
+    </div>
+</form>
+<span>Tổng số cột: {{  data|length }}</span>
+<table class="table table-striped table-bordered table-hover align-middle text-center">
+    <thead class="table-dark">
+    <tr>
+        {% for col in data[0].keys() %}
+        <th>{{ col }}</th>
         {% endfor %}
-      </tbody>
-    </table>
-  </body>
+        <th>Hành Động</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for row in data %}
+    <tr>
+        {% for value in row.values() %}
+        <td>{{ value }}</td>
+        {% endfor %}
+        <td>
+            <a href="/edit/{{ loop.index0 }}" class="btn btn-sm btn-warning">Sửa</a>
+            <a href="/delete/{{ loop.index0 }}" class="btn btn-sm btn-danger">Xóa</a>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</body>
 </html>
