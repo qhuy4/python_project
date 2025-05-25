@@ -1,8 +1,7 @@
 from operator import truediv
 from math import ceil
-
-from flask import Flask, render_template, request, redirect
-from modules.load_file import load_data, save_data
+from flask import Flask, render_template, request, redirect,flash
+from modules.clean import load_data, save_data
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
@@ -10,65 +9,12 @@ import io
 import base64
 
 app = Flask(__name__)
+app.secret_key = os.urandom(24)
 
-@app.template_filter('custom_column_name')
-def custom_column_name_filter(col_name):
-    name_map = {
-        'Age': 'Tuổi', 'Sex': 'Giới Tính', 'Cp': 'Loại Đau Ngực', 'Trestbps': 'Huyết Áp Nghỉ',
-        'Chol': 'Cholesterol', 'Fbs': 'Đường Huyết Đói', 'Restecg': 'ECG Lúc Nghỉ',
-        'Thalach': 'Nhịp Tim Tối Đa', 'Exang': 'Đau Ngực Khi Gắng Sức', 'Oldpeak': 'ST Chênh Lệch',
-        'Slope': 'Dốc ST Gắng Sức', 'Ca': 'Số Mạch Vành Tắc', 'Thal': 'Thalassemia',
-        'Target': 'Kết Quả Chẩn Đoán'
-    }
-    return name_map.get(col_name, col_name)
-
-@app.template_filter('custom_cell_value')
-def custom_cell_value_filter(value, col_name):
-    # ... (đảm bảo hàm này có đầy đủ như phiên bản tôi đã cung cấp)
-    if col_name == 'Sex' or col_name == 'Giới tính':
-        if value == 0: return 'Nữ'
-        elif value == 1: return 'Nam'
-        return value
-    elif col_name == 'Fbs' or col_name == 'Đường huyết đói':
-        return 'Có' if value == 1 else 'Không' if value == 0 else value
-    elif col_name == 'Target' or col_name == 'Kết quả chẩn đoán':
-        return 'Mắc Bệnh Tim' if value == 1 else 'Không Mắc Bệnh Tim' if value == 0 else value
-    elif col_name == 'Cp' or col_name == 'Loại đau ngực':
-        if value == 0: return 'Điển hình đau thắt ngực'
-        elif value == 1: return 'Đau thắt ngực không điển hình'
-        elif value == 2: return 'Đau không đau thắt ngực'
-        elif value == 3: return 'Không đau'
-        return value
-    elif col_name == 'Restecg' or col_name == 'ECG lúc nghỉ':
-        if value == 0: return 'Bình thường'
-        elif value == 1: return 'Có bất thường ST-T'
-        elif value == 2: return 'Phì đại thất trái'
-        return value
-    elif col_name == 'Exang' or col_name == 'Đau ngực khi gắng sức':
-        return 'Có' if value == 1 else 'Không' if value == 0 else value
-    elif col_name == 'Slope' or col_name == 'Dốc ST gắng sức':
-        if value == 0: return 'Lên dốc'
-        elif value == 1: return 'Phẳng'
-        elif value == 2: return 'Dốc xuống'
-        return value
-    elif col_name == 'Ca' or col_name == 'Số mạch vành tắc':
-        if value == 0: return '0 mạch'
-        elif value == 1: return '1 mạch'
-        elif value == 2: return '2 mạch'
-        elif value == 3: return '3 mạch'
-        elif value == 4: return 'Không xác định'
-        return value
-    elif col_name == 'Thal' or col_name == 'Thalassemia':
-        if value == 1: return 'Bình thường'
-        elif value == 2: return 'Khiếm khuyết cố định'
-        elif value == 3: return 'Khiếm khuyết có thể đảo ngược'
-        return value
-    return value
-
+#Route Index
 @app.route("/")
 def index():
     df = load_data()
-
     # lọc dữ liệu
     for col_name in df.columns:
         filter_value = request.args.get(f'filter_{col_name}', '').strip()
@@ -104,53 +50,197 @@ def index():
 
     start = (page - 1) * per_page
     end = start + per_page
+    cols = {
+        "age": "Tuổi",
+        "sex": "Giới tính",
+        "cp": "Đau ngực",
+        "trestbps": "Huyết áp (mmHg)",
+        "chol": "Cholesterol (mg/dl)",
+        "fbs": "Đường huyết (> 120mg/dl)",
+        "restecg": "ECG",
+        "thalach": "Nhịp tim",
+        "exang": "Đau ngực khi gắng sức",
+        "oldpeak": "Độ chênh ST",
+        "slope": "Dốc ST",
+        "ca": "Số mạch vành bị tắc",
+        "thal": "Thalassemia",
+        "num": "Kết quả"
+    }
+    df = df.rename(columns=cols)
+
+    df["Giới tính"] = df["Giới tính"].map({0: "Nữ", 1: "Nam"})
+
+    df["Đau ngực"] = df["Đau ngực"].map({
+        1: "Đau thắt ngực điển hình",
+        2: "Đau thắt ngực không điển hình",
+        3: "Đau không do tim (không liên quan tim)",
+        4: "Không có triệu chứng"
+    })
+
+    df["Đường huyết (> 120mg/dl)"] = df["Đường huyết (> 120mg/dl)"].map({
+        0: "≤ 120 mg/dl",
+        1: "> 120 mg/dl"
+    })
+
+    # ECG
+    df["ECG"] = df["ECG"].map({
+        0: "Bình thường",
+        1: "Bất thường ST-T",
+        2: "Phì đại thất trái"
+    })
+
+    df["Đau ngực khi gắng sức"] = df["Đau ngực khi gắng sức"].map({
+        0: "Không",
+        1: "Có"
+    })
+
+    df["Dốc ST"] = df["Dốc ST"].map({
+        1: "Dốc lên",
+        2: "Phẳng",
+        3: "Dốc xuống"
+    })
+
+    df["Thalassemia"] = df["Thalassemia"].map({
+        3: "Bình thường",
+        6: "Khiếm khuyết cố định",
+        7: "Khiếm khuyết hồi phục"
+    })
+
+
+    result_map = {
+        0: "Không bệnh tim",
+        1: "Bệnh tim nhẹ"
+    }
+
+    result_map = {
+        0: "Không bệnh tim",
+        1: "Bệnh tim nhẹ",
+        0.0: "Không bệnh tim",
+        1.0: "Bệnh tim nhẹ",
+        "0.0": "Không bệnh tim",
+        "1.0": "Bệnh tim nhẹ",
+    }
+    df["Kết quả"] = df["Kết quả"].map(result_map).fillna("Bệnh tim nghiêm trọng")
+
     df_page = df.iloc[start:end]
 
+    # Tạo list of
+    columns = [("ID", "STT")]
+    for key, label in cols.items():
+        columns.append((key, label))
     return render_template("index.html",
                            data=df_page.to_dict(orient='records'),
-                           columns=df.columns.tolist(),
+                           columns=columns,
                            current_sort_by=sort_by,
                            current_sort_order=sort_order,
                            current_page=page,
                            total_pages=total_pages)
 
-
-    #return render_template("index.html", data=df.to_dict(orient="records"))
-
-# Hiển thị form trống
-@app.route("/add", methods=["GET"])
+@app.route("/add")
 def create():
-    df = load_data()
-    empty_record = {col: "" for col in df.columns}
-    return render_template("create.html", record=empty_record)
+    return render_template("create.html")
 
-# Xử lý dữ liệu được submit
+
+#Hàm kiểm tra bệnh tim
+    #Params "cp": "Đau ngực", chol: Cholesterol, exang:Đau ngực khi gắng sức ,oldpeak :Độ chênh ST
+    # return only 1 or 2 or 3
+def compute_num(cp, chol,exang,oldpeak):
+    score = 0
+    if cp >= 2:
+        score += 1
+    if chol > 240:
+        score += 1
+    if oldpeak > 2.0:
+        score += 1
+    if exang == 1:
+        score += 1
+    return 1 if score >= 2 else 0
+
+# Create function to save data to CSV file.
 @app.route("/create", methods=["POST"])
-def recreate():
+def save():
+    age       = float(request.form["age"])
+    sex       = int(request.form["sex"])
+    cp        = int(request.form["cp"])
+    trestbps  = float(request.form["trestbps"])
+    chol      = float(request.form["chol"])
+    fbs       = int(request.form["fbs"])
+    restecg   = int(request.form["restecg"])
+    thalach   = float(request.form["thalach"])
+    exang     = int(request.form["exang"])
+    oldpeak   = float(request.form["oldpeak"])
+    slope     = int(request.form["slope"])
+    ca        = int(request.form["ca"])
+    thal      = int(request.form["thal"])
+
+    # 4. Lưu bản ghi mới vào CSV
     df = load_data()
-    new_entry = {col: request.form.get(col, "") for col in df.columns}
-    df = pd.concat([df, pd.DataFrame([new_entry])], ignore_index=True)
+    new_record = {
+        "age": age,
+        "sex": sex,
+        "cp": cp,
+        "trestbps": trestbps,
+        "chol": chol,
+        "fbs": fbs,
+        "restecg": restecg,
+        "thalach": thalach,
+        "exang": exang,
+        "oldpeak": oldpeak,
+        "slope": slope,
+        "ca": ca,
+        "thal": thal,
+        #  num = 1 nếu score>=2 (tạm coi >=2 là có bệnh), else 0
+        "num": compute_num(cp, chol,exang,oldpeak)
+    }
+    df = pd.concat([df, pd.DataFrame([new_record])], ignore_index=True)
     save_data(df)
     return redirect("/")
 
-@app.route("/edit/<int:index>")
-def edit(index):
+#Load Data Edit Function
+    # Params Id
+    # Return HTML Template with record data
+@app.route("/edit/<int:id>")
+def edit(id):
     df = load_data()
-    record = df.iloc[index].to_dict()
-    return render_template("edit.html", record=record, index=index)
+    df2 = df.set_index('ID')
+    record = df2.loc[id].to_dict()
+    return render_template("edit.html", record=record, id=id)
 
-@app.route("/update/<int:index>", methods=["POST"])
-def update(index):
+#Updated Function
+    # Params Id
+    # Return HTML Template with record data
+@app.route("/update/<int:id>", methods=["POST"])
+def update(id):
     df = load_data()
     for col in df.columns:
-        df.at[index, col] = request.form[col]
+        if col == 'ID':
+            continue
+        df.loc[df['ID'] == id, col] = request.form[col]
+
+    # Lấy lại bản ghi vừa sửa
+    row = df.loc[df['ID'] == id].iloc[0]
+    # Tính lại num
+    new_num = compute_num(
+        cp       = int(row['cp']),
+        chol     = float(row['chol']),
+        exang    = int(row['exang']),
+        oldpeak  = float(row['oldpeak']),
+    )
+    # Gán num mới
+    df.loc[df['ID'] == id, 'num'] = new_num
+
     save_data(df)
     return redirect("/")
 
-@app.route("/delete/<int:index>")
-def delete(index):
+#Delete Function
+    # Params Id
+    # Return Homepage after delete
+@app.route("/delete/<int:id>")
+def delete(id):
     df = load_data()
-    df = df.drop(index).reset_index(drop=True)
+    df = df[df['ID'] != id].reset_index(drop=True)
+    df = df.drop(columns=['ID'])
+    df.insert(0, 'ID', range(1, len(df) + 1))
     save_data(df)
     return redirect("/")
 
@@ -218,7 +308,7 @@ def charts():
 
     # Chart 5: Mạch vành tắc vs bệnh tim
     fig5, ax5 = plt.subplots()
-    df.groupby("Số mạch vành bị tắc (0–3)")["Kết quả"].mean().plot(kind='bar', ax=ax5)
+    df.groupby("Số mạch vành bị tắc")["Kết quả"].mean().plot(kind='bar', ax=ax5)
     ax5.set_title("Tỉ lệ bệnh theo số mạch vành bị tắc")
     charts.append(("Tỉ lệ bệnh theo số mạch vành bị tắc", plot_to_base64(fig5)))
 
