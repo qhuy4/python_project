@@ -249,7 +249,6 @@ def delete(id):
 def charts():
     df = load_data()
     charts = []
-
     def plot_to_base64(fig):
         buf = io.BytesIO()
         fig.savefig(buf, format='png')
@@ -261,7 +260,7 @@ def charts():
     fig1, ax1 = plt.subplots(figsize=(6, 5))  # Tăng kích thước
 
     # Tạo cột mới: 0 = không bệnh, 1 = có bệnh
-    df["Có bệnh tim"] = df["Kết quả"].apply(lambda x: 0 if x == 0 else 1)
+    df["Có bệnh tim"] = df["num"].apply(lambda x: 0 if x == 0 else 1)
 
     # Đếm số lượng
     counts = df["Có bệnh tim"].value_counts().sort_index()
@@ -290,25 +289,25 @@ def charts():
 
     # Chart 2: Giới tính và tỉ lệ bệnh
     fig2, ax2 = plt.subplots()
-    df.groupby("Giới tính")["Kết quả"].mean().plot(kind='bar', ax=ax2)
+    df.groupby("sex")["num"].mean().plot(kind='bar', ax=ax2)
     ax2.set_title("Tỉ lệ bệnh tim theo giới tính")
     charts.append(("Tỉ lệ bệnh tim theo giới tính", plot_to_base64(fig2)))
 
     # Chart 3: Tuổi trung bình
     fig3, ax3 = plt.subplots()
-    df.groupby("Kết quả")["Tuổi"].mean().plot(kind='bar', ax=ax3)
+    df.groupby("num")["age"].mean().plot(kind='bar', ax=ax3)
     ax3.set_title("Tuổi trung bình theo kết quả chẩn đoán")
     charts.append(("Tuổi trung bình theo kết quả chẩn đoán", plot_to_base64(fig3)))
 
     # Chart 4: Boxplot nhịp tim
     fig4, ax4 = plt.subplots()
-    df.boxplot(column="Nhịp tim tối đa", by="Kết quả", ax=ax4)
+    df.boxplot(column="thalach", by="num", ax=ax4)
     ax4.set_title("Phân bố nhịp tim theo tình trạng bệnh")
     charts.append(("Phân bố nhịp tim theo tình trạng bệnh", plot_to_base64(fig4)))
 
     # Chart 5: Mạch vành tắc vs bệnh tim
     fig5, ax5 = plt.subplots()
-    df.groupby("Số mạch vành bị tắc")["Kết quả"].mean().plot(kind='bar', ax=ax5)
+    df.groupby("ca")["num"].mean().plot(kind='bar', ax=ax5)
     ax5.set_title("Tỉ lệ bệnh theo số mạch vành bị tắc")
     charts.append(("Tỉ lệ bệnh theo số mạch vành bị tắc", plot_to_base64(fig5)))
 
