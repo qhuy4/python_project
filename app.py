@@ -117,10 +117,18 @@ def index():
 
     #return render_template("index.html", data=df.to_dict(orient="records"))
 
-@app.route("/create", methods=["POST"])
+# Hiển thị form trống
+@app.route("/add", methods=["GET"])
 def create():
     df = load_data()
-    new_entry = {col: request.form[col] for col in df.columns}
+    empty_record = {col: "" for col in df.columns}
+    return render_template("create.html", record=empty_record)
+
+# Xử lý dữ liệu được submit
+@app.route("/create", methods=["POST"])
+def recreate():
+    df = load_data()
+    new_entry = {col: request.form.get(col, "") for col in df.columns}
     df = pd.concat([df, pd.DataFrame([new_entry])], ignore_index=True)
     save_data(df)
     return redirect("/")
@@ -163,7 +171,7 @@ def charts():
     fig1, ax1 = plt.subplots(figsize=(6, 5))  # Tăng kích thước
 
     # Tạo cột mới: 0 = không bệnh, 1 = có bệnh
-    df["Có bệnh tim"] = df["Kết quả chẩn đoán (1: Mắc bệnh tim)"].apply(lambda x: 0 if x == 0 else 1)
+    df["Có bệnh tim"] = df["Kết quả"].apply(lambda x: 0 if x == 0 else 1)
 
     # Đếm số lượng
     counts = df["Có bệnh tim"].value_counts().sort_index()
@@ -192,25 +200,25 @@ def charts():
 
     # Chart 2: Giới tính và tỉ lệ bệnh
     fig2, ax2 = plt.subplots()
-    df.groupby("Giới tính (0: Nữ, 1: Nam)")["Kết quả chẩn đoán (1: Mắc bệnh tim)"].mean().plot(kind='bar', ax=ax2)
+    df.groupby("Giới tính")["Kết quả"].mean().plot(kind='bar', ax=ax2)
     ax2.set_title("Tỉ lệ bệnh tim theo giới tính")
     charts.append(("Tỉ lệ bệnh tim theo giới tính", plot_to_base64(fig2)))
 
     # Chart 3: Tuổi trung bình
     fig3, ax3 = plt.subplots()
-    df.groupby("Kết quả chẩn đoán (1: Mắc bệnh tim)")["Tuổi"].mean().plot(kind='bar', ax=ax3)
+    df.groupby("Kết quả")["Tuổi"].mean().plot(kind='bar', ax=ax3)
     ax3.set_title("Tuổi trung bình theo kết quả chẩn đoán")
     charts.append(("Tuổi trung bình theo kết quả chẩn đoán", plot_to_base64(fig3)))
 
     # Chart 4: Boxplot nhịp tim
     fig4, ax4 = plt.subplots()
-    df.boxplot(column="Nhịp tim tối đa", by="Kết quả chẩn đoán (1: Mắc bệnh tim)", ax=ax4)
+    df.boxplot(column="Nhịp tim tối đa", by="Kết quả", ax=ax4)
     ax4.set_title("Phân bố nhịp tim theo tình trạng bệnh")
     charts.append(("Phân bố nhịp tim theo tình trạng bệnh", plot_to_base64(fig4)))
 
     # Chart 5: Mạch vành tắc vs bệnh tim
     fig5, ax5 = plt.subplots()
-    df.groupby("Số mạch vành bị tắc (0–3)")["Kết quả chẩn đoán (1: Mắc bệnh tim)"].mean().plot(kind='bar', ax=ax5)
+    df.groupby("Số mạch vành bị tắc (0–3)")["Kết quả"].mean().plot(kind='bar', ax=ax5)
     ax5.set_title("Tỉ lệ bệnh theo số mạch vành bị tắc")
     charts.append(("Tỉ lệ bệnh theo số mạch vành bị tắc", plot_to_base64(fig5)))
 

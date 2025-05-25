@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Thêm dữ liệu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-4">
+<h2 class="mb-4">Thêm dữ liệu</h2>
+<form method="post" action="/create">
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">Tuổi</label>
+            <input name="Tuổi" class="form-control" type="number" required>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Giới tính</label>
+
+            <select name="Giới tính" class="form-select">
+                <option value="1">Nam</option>
+                <option value="0">Nữ</option>
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Đau ngực Loại:(0-3)</label>
+            <input name="Đau ngực \nLoại:(0-3)" class="form-control" type="number" min="0" max="3" required>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Huyết áp (mmHg)</label>
+            <input name="Huyết áp (mmHg)" class="form-control" type="number" required>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Cholesterol (mg/dl)</label>
+            <input name="Cholesterol (mg/dl)" class="form-control" type="number" required>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Đường huyết (> 120mg/dl)</label>
+            <input name="Đường huyết \n(> 120mg/dl) " class="form-control" required>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">ECG (0–2)</label>
+            <input name="ECG (0–2)" class="form-control" type="number" min="0" max="2" required>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Nhịp tim tối đa</label>
+            <input name="Nhịp tim tối đa" class="form-control" type="number" required>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Đau ngực khi gắng sức</label>
+            <input name="Đau ngực khi gắng sức" class="form-control" required>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Độ chênh ST</label>
+            <input name="Độ chênh ST" class="form-control" required>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Dốc ST (0–2)</label>
+            <input name="Dốc ST (0–2)" class="form-control" type="number" min="0" max="2" required>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Số mạch vành bị tắc (0–3)</label>
+            <input name="Số mạch vành bị tắc (0–3)" class="form-control" type="number" min="0" max="3" required>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Thalassemia (1–3)</label>
+            <input name="Thalassemia (1–3)" class="form-control" type="number" min="1" max="3" required>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Kết quả</label>
+            <input name="Kết quả" class="form-control bg-secondary" required disabled>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <button type="submit" class="btn btn-success">Lưu</button>
+        <button type="submit" class="btn btn-primary">Dự đoán kết quả</button>
+        <a href="/" class="btn btn-secondary">Huỷ</a>
+    </div>
+</form>
+
+</body>
+</html>
