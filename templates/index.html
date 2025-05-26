@@ -21,11 +21,35 @@
         <a class="btn btn-primary" href="/chart">Xem thống kê</a>
     </div>
 </div>
-<form method="get" action="/">
-    <div class="col-12 d-flex justify-content-start ms-auto mb-2">
-        <button type="submit" class="btn btn-info btn-sm text-left me-3">Áp dụng</button>
-        <a href="/" class="btn btn-secondary btn-sm">Xóa Lọc</a>
+<!-- ... phần đầu giữ nguyên ... -->
+
+<form method="get" action="/" class="row g-3 mb-4">
+    <div class="col-md-3">
+        <label for="search_field" class="form-label">Chọn trường</label>
+        <select name="search_field" id="search_field" class="form-select">
+            {% for key, label in columns %}
+                {% if key != 'ID' %}
+                <option value="{{ label }}" {% if request.args.get('search_field') == label %}selected{% endif %}>
+                    {{ label }}
+                </option>
+                {% endif %}
+            {% endfor %}
+        </select>
     </div>
+    <div class="col-md-4">
+        <label for="search_value" class="form-label">Từ khóa</label>
+        <input type="text" name="search_value" id="search_value"
+       value="{{ request.args.get('search_value', '') }}"
+       class="form-control" placeholder="Nhập giá trị cần tìm">
+
+    </div>
+    <div class="col-md-5 d-flex align-items-end">
+        <button type="submit" class="btn btn-info me-2">Áp dụng</button>
+        <a href="/" class="btn btn-secondary">Xóa Lọc</a>
+    </div>
+</form>
+
+<form method="get" action="/">
     <table class="table table-bordered table-striped">
         <thead class="table-dark">
         <tr>
@@ -75,16 +99,19 @@
 <nav aria-label="Page navigation" class="mt-4">
     <ul class="pagination justify-content-center">
 
+        {% set sf = request.args.get('search_field', '') %}
+        {% set sv = request.args.get('search_value', '') %}
+
         {% if current_page > 1 %}
         <li class="page-item">
             <a class="page-link"
-               href="?page={{ current_page - 1 }}&sort_by={{ current_sort_by }}&sort_order={{ current_sort_order }}">‹</a>
+               href="?page={{ current_page - 1 }}&sort_by={{ current_sort_by }}&sort_order={{ current_sort_order }}&search_field={{ sf }}&search_value={{ sv }}">‹</a>
         </li>
         {% endif %}
 
         {% if current_page > 3 %}
         <li class="page-item"><a class="page-link"
-                                 href="?page=1&sort_by={{ current_sort_by }}&sort_order={{ current_sort_order }}">1</a>
+                                 href="?page=1&sort_by={{ current_sort_by }}&sort_order={{ current_sort_order }}&search_field={{ sf }}&search_value={{ sv }}">1</a>
         </li>
         <li class="page-item disabled"><span class="page-link">...</span></li>
         {% endif %}
@@ -92,8 +119,7 @@
         {% for p in range(current_page - 1, current_page + 2) %}
         {% if 1 <= p <= total_pages %}
         <li class="page-item {% if p == current_page %}active{% endif %}">
-            <a class="page-link" href="?page={{ p }}&sort_by={{ current_sort_by }}&sort_order={{ current_sort_order }}">{{
-                p }}</a>
+            <a class="page-link" href="?page={{ p }}&sort_by={{ current_sort_by }}&sort_order={{ current_sort_order }}&search_field={{ sf }}&search_value={{ sv }}">{{ p }}</a>
         </li>
         {% endif %}
         {% endfor %}
@@ -101,19 +127,19 @@
         {% if current_page < total_pages - 2 %}
         <li class="page-item disabled"><span class="page-link">...</span></li>
         <li class="page-item"><a class="page-link"
-                                 href="?page={{ total_pages }}&sort_by={{ current_sort_by }}&sort_order={{ current_sort_order }}">{{
-            total_pages }}</a></li>
+                                 href="?page={{ total_pages }}&sort_by={{ current_sort_by }}&sort_order={{ current_sort_order }}&search_field={{ sf }}&search_value={{ sv }}">{{ total_pages }}</a></li>
         {% endif %}
 
         {% if current_page < total_pages %}
         <li class="page-item">
             <a class="page-link"
-               href="?page={{ current_page + 1 }}&sort_by={{ current_sort_by }}&sort_order={{ current_sort_order }}">›</a>
+               href="?page={{ current_page + 1 }}&sort_by={{ current_sort_by }}&sort_order={{ current_sort_order }}&search_field={{ sf }}&search_value={{ sv }}">›</a>
         </li>
         {% endif %}
 
     </ul>
 </nav>
+
 </body>
 <!-- SweetAlert2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
