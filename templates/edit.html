@@ -1,24 +1,121 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <title>Edit Record</title>
+<head>
+    <title>Chỉnh Sửa dữ liệu</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  </head>
-  <body class="container mt-4">
-    <h2 class="mb-4">Edit Record</h2>
-    <form method="post" action="/update/{{ index }}">
-      <div class="row g-3">
-        {% for key, value in record.items() %}
-        <div class="col-md-4">
-          <label class="form-label">{{ key }}</label>
-          <input name="{{ key }}" class="form-control" value="{{ value }}">
-        </div>
-        {% endfor %}
-      </div>
-      <div class="mt-4">
-        <button type="submit" class="btn btn-success">Save</button>
-        <a href="/" class="btn btn-secondary">Cancel</a>
-      </div>
-    </form>
-  </body>
+</head>
+<body class="container mt-4">
+<h2 class="mb-4">Thêm dữ liệu</h2>
+<form method="POST" action="{{ url_for('update', id=id) }}" class="row g-3">
+  <div class="col-md-4">
+    <label class="form-label">Tuổi</label>
+    <input type="number" value="{{ record.age|round(0, 'floor')|int }}" class="form-control" name="age" required>
+  </div>
+  <div class="col-md-4">
+    <label class="form-label">Giới tính</label>
+    <select class="form-select" name="sex" required>
+      <option value="1" {% if record.sex == 1 or record.sex == '1' %}selected{% endif %} >Nam</option>
+      <option value="0" {% if record.sex == 0 or record.sex == '0' %}selected{% endif %}>Nữ</option>
+    </select>
+  </div>
+  <div class="col-md-4">
+    <label class="form-label">Đau ngực (0-3)</label>
+    <select class="form-select" name="cp" required>
+      <option value="1" {% if record.cp == 1 or record.cp == '1' %}selected{% endif %}  >Đau thắt ngực điển hình</option>
+      <option value="2" {% if record.cp == 2 or record.cp == '2' %}selected{% endif %} >Đau thắt ngực không điển hình</option>
+      <option value="3" {% if record.cp == 3 or record.cp == '3' %}selected{% endif %} >Đau không do tim (không liên quan tim)</option>
+      <option value="4" {% if record.cp == 4 or record.cp == '4' %}selected{% endif %} >Không có triệu chứng</option>
+    </select>
+  </div>
+
+  <div class="col-md-4">
+    <label class="form-label">Huyết áp (mmHg)</label>
+    <input type="number" value="{{record.trestbps|round(0, 'floor')|int}}" class="form-control" name="trestbps" required>
+  </div>
+  <div class="col-md-4">
+    <label class="form-label">Cholesterol (mg/dl)</label>
+    <input type="number" class="form-control" value="{{record.chol|round(0, 'floor')|int}}" name="chol" required>
+  </div>
+  <div class="col-md-4">
+    <label class="form-label">Đường huyết > 120mg/dl</label>
+    <select class="form-select" name="fbs" required>
+      <option value="1" {% if record.fbs == 1 or record.fbs == '1' %}selected{% endif %}>Có</option>
+      <option value="0" {% if record.fbs == 0 or record.fbs == '0' %}selected{% endif %}>Không</option>
+    </select>
+  </div>
+
+  <div class="col-md-4">
+    <label class="form-label">ECG (0-2)</label>
+    <select class="form-select" name="restecg" required>
+      <option value="0" {% if record.restecg == 0 or record.restecg == '0' %}selected{% endif %}>Bình thường</option>
+      <option value="1" {% if record.restecg == 1 or record.restecg == '1' %}selected{% endif %}>ST-T bất thường</option>
+      <option value="2" {% if record.restecg == 2 or record.restecg == '2' %}selected{% endif %}>Phì đại thất trái</option>
+    </select>
+  </div>
+  <div class="col-md-4">
+    <label class="form-label">Nhịp tim tối đa</label>
+    <input type="number" class="form-control" value="{{record.thalach}}" name="thalach" required>
+  </div>
+  <div class="col-md-4">
+    <label class="form-label">Đau ngực khi gắng sức</label>
+    <select class="form-select" name="exang" required>
+      <option value="1" {% if record.exang == 1 or record.exang == '1' %}selected{% endif %}>Có</option>
+      <option value="0" {% if record.exang == 0 or record.exang == '0' %}selected{% endif %}>Không</option>
+    </select>
+  </div>
+
+  <div class="col-md-4">
+    <label class="form-label">Độ chênh ST</label>
+    <input type="number" step="0.1" value="{{record.oldpeak}}"  class="form-control" name="oldpeak" required>
+  </div>
+  <div class="col-md-4">
+    <label class="form-label">Dốc ST (1-3)</label>
+    <select class="form-select" name="slope" required>
+      <option value="1" {% if record.slope == 1 or record.slope == '1' %}selected{% endif %}>Tăng</option>
+      <option value="2" {% if record.slope == 2 or record.slope == '2' %}selected{% endif %}>Phẳng</option>
+      <option value="3" {% if record.slope == 3 or record.slope == '3' %}selected{% endif %}>Giảm</option>
+    </select>
+  </div>
+  <div class="col-md-4">
+    <label class="form-label">Số mạch vành bị tắc (0–3)</label>
+    <select class="form-select" name="ca" required>
+      <option value="0" {% if record.ca == 0 or record.ca == '0' %}selected{% endif %}>0</option>
+      <option value="1" {% if record.ca == 1 or record.ca == '1' %}selected{% endif %}>1</option>
+      <option value="2" {% if record.ca == 2 or record.ca == '2' %}selected{% endif %}>2</option>
+      <option value="3" {% if record.ca == 3 or record.ca == '3' %}selected{% endif %}>3</option>
+    </select>
+  </div>
+
+  <div class="col-md-4">
+    <label class="form-label">Thalassemia (3/6/7)</label>
+    <select class="form-select" name="thal" required>
+      <option value="3" {% if record.thal == 3 or record.thal == '3' %}selected{% endif %}>Bình thường</option>
+      <option value="6" {% if record.thal == 6 or record.thal == '6' %}selected{% endif %}>Tổn thương cố định</option>
+      <option value="7" {% if record.thal == 7 or record.thal == '7' %}selected{% endif %}>Tổn thương hồi phục</option>
+    </select>
+  </div>
+
+  <div class="col-md-4 ">
+        <label class="form-label">Kết quả</label>
+<!--      {{record}}-->
+{% set result_map = {
+    0: "Không bệnh tim",
+    1: "Bệnh tim nhẹ"
+} %}
+
+{% set raw = record.num|int %}
+<input type="text"
+       class="form-control bg-secondary text-white"
+       readonly
+       value="{{result_map[raw] if raw in result_map else 'Bệnh tim nghiêm trọng'}}"
+>
+    <input type="hidden" name="num" value="{{ record.num|int }}">
+  </div>
+
+  <div class="col-12">
+    <button type="submit" class="btn btn-primary">Lưu</button>
+      <a href="/" class="btn btn-outline-primary">← Quay lại trang chính</a>
+  </div>
+</form>
+</body>
 </html>
