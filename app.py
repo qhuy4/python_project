@@ -255,7 +255,13 @@ def charts():
 
     # Map các giá trị để hiển thị tiếng Việt
     sex_map = {0: "Nữ", 1: "Nam"}
-    num_map = {0: "Không bệnh tim", 1: "Bệnh tim nhẹ", 2: "Bệnh tim nghiêm trọng",3:"Ngiêm trọng mức độ 3",4:"Ngiêm trọng mức độ 4"}
+    num_map = {
+        0: "Không bệnh tim",
+        1: "Bệnh tim nhẹ",
+        2: "Bệnh tim trung bình",
+        3: "Bệnh tim nặng (mức 3)",
+        4: "Bệnh tim rất nặng (mức 4)"
+    }
 
     charts = []
 
@@ -272,11 +278,11 @@ def charts():
     # Chart 1: Phân bố người có bệnh tim vs không có bệnh
     fig1, ax1 = plt.subplots(figsize=(6, 5))
     counts = df["Có bệnh tim"].value_counts().sort_index()
-    counts.index = ["Không bệnh", "Có bệnh"]
+    counts.index = ["Không mắc bệnh tim", "Mắc bệnh tim"]
     bars = ax1.bar(counts.index, counts.values, color=['green', 'red'])
-    ax1.set_title("Phân bố người có và không có bệnh tim")
+    ax1.set_title("Tình trạng mắc bệnh tim trong dữ liệu")
     ax1.set_ylabel("Số lượng bệnh nhân")
-    ax1.set_xlabel("Tình trạng bệnh tim")
+    ax1.set_xlabel("Tình trạng")
     for bar in bars:
         height = bar.get_height()
         ax1.annotate(f'{int(height)}',
@@ -285,55 +291,82 @@ def charts():
                      textcoords="offset points",
                      ha='center', va='bottom', fontsize=10, fontweight='bold')
     fig1.tight_layout()
-    charts.append(("Phân bố người có và không có bệnh tim", plot_to_base64(fig1)))
+    charts.append(("Tình trạng mắc bệnh tim", plot_to_base64(fig1)))
 
-    # Chart 2: Tỉ lệ bệnh tim theo giới tính
+    # Chart 2: Tỉ lệ mắc bệnh tim trung bình theo giới tính
+    # Chart 2: Tỉ lệ (%) người mắc bệnh tim theo giới tính
     fig2, ax2 = plt.subplots()
-    mean_by_sex = df.dropna(subset=["sex", "num"]).groupby("sex")["num"].mean()
-    mean_by_sex.index = mean_by_sex.index.map(sex_map).fillna("Khác")
-    mean_by_sex.plot(kind='bar', ax=ax2, color=['blue', 'orange'])
-    ax2.set_title("Tỉ lệ bệnh tim theo giới tính")
-    ax2.set_xlabel("Giới tính")
-    ax2.set_ylabel("Tỉ lệ bệnh tim trung bình")
-    fig2.tight_layout()
-    charts.append(("Tỉ lệ bệnh tim theo giới tính", plot_to_base64(fig2)))
 
-    # Chart 3: Tuổi trung bình theo kết quả chẩn đoán
+    # Tạo cột 'Có bệnh tim': 1 nếu num > 0, 0 nếu không
+    df["Có bệnh tim"] = df["num"].apply(lambda x: 1 if x > 0 else 0)
+
+    # Tính tỉ lệ phần trăm người mắc bệnh tim theo giới tính
+    rate_by_sex = df.dropna(subset=["sex", "Có bệnh tim"]).groupby("sex")["Có bệnh tim"].mean() * 100
+    rate_by_sex.index = rate_by_sex.index.map(sex_map).fillna("Khác")
+
+    # Vẽ biểu đồ
+    rate_by_sex.plot(kind='bar', ax=ax2, color=['blue', 'orange'])
+    ax2.set_title("Tỉ lệ (%) người mắc bệnh tim theo giới tính")
+    ax2.set_xlabel("Giới tính")
+    ax2.set_ylabel("Tỉ lệ mắc bệnh (%)")
+    ax2.set_ylim(0, 100)  # Giới hạn trục Y từ 0 đến 100%
+
+    # Hiển thị nhãn trên đầu cột
+    for i, v in enumerate(rate_by_sex.values):
+        ax2.text(i, v + 1, f"{v:.1f}%", ha='center', va='bottom', fontweight='bold')
+
+    fig2.tight_layout()
+    charts.append(("Tỉ lệ (%) người mắc bệnh tim theo giới tính", plot_to_base64(fig2)))
+
+    # Chart 3: Tuổi trung bình tương ứng với mức độ bệnh tim
     fig3, ax3 = plt.subplots()
     mean_age = df.dropna(subset=["num", "age"]).groupby("num")["age"].mean()
-    mean_age.index = mean_age.index.map(num_map).fillna("Khác")
+    mean_age.index = mean_age.index.map(num_map).fillna("Không rõ")
     mean_age.plot(kind='bar', ax=ax3, color='purple')
-    ax3.set_title("Tuổi trung bình theo kết quả chẩn đoán")
-    ax3.set_xlabel("Kết quả chẩn đoán")
-    ax3.set_ylabel("Tuổi trung bình")
+    ax3.set_title("Tuổi trung bình theo mức độ bệnh tim")
+    ax3.set_xlabel("Mức độ bệnh tim")
+    ax3.set_ylabel("Tuổi trung bình (năm)")
     fig3.tight_layout()
-    charts.append(("Tuổi trung bình theo kết quả chẩn đoán", plot_to_base64(fig3)))
+    charts.append(("Tuổi trung bình theo mức độ bệnh tim", plot_to_base64(fig3)))
 
-    # Chart 4: Boxplot nhịp tim theo tình trạng bệnh
+    # Chart 4: Boxplot nhịp tim tối đa theo mức độ bệnh tim
     fig4, ax4 = plt.subplots()
     df.boxplot(column="thalach", by="num", ax=ax4)
-    ax4.set_title("Phân bố nhịp tim theo tình trạng bệnh")
-    ax4.set_xlabel("Kết quả chẩn đoán")
-    ax4.set_ylabel("Nhịp tim (thalach)")
+    ax4.set_title("Phân bố nhịp tim tối đa theo mức độ bệnh tim")
+    ax4.set_xlabel("Mức độ bệnh tim")
+    ax4.set_ylabel("Nhịp tim tối đa (thalach)")
     ax4.set_xticklabels([num_map.get(int(i.get_text()), i.get_text()) for i in ax4.get_xticklabels()])
-    fig4.suptitle("")
+    fig4.suptitle("")  # Loại bỏ tiêu đề mặc định
     fig4.tight_layout()
-    charts.append(("Phân bố nhịp tim theo tình trạng bệnh", plot_to_base64(fig4)))
+    charts.append(("Nhịp tim theo mức độ bệnh tim", plot_to_base64(fig4)))
 
-    # Chart 5: Tỉ lệ bệnh theo số mạch vành bị tắc
+    # Chart 5: Tỉ lệ mắc bệnh tim theo số mạch vành bị tắc
+    # Chart 5: Tỉ lệ (%) người mắc bệnh tim theo số mạch vành bị tắc
     fig5, ax5 = plt.subplots()
-    df["ca"] = pd.to_numeric(df["ca"], errors='coerce')  # Đảm bảo kiểu số
-    mean_ca = df.dropna(subset=["ca", "num"]).groupby("ca")["num"].mean()
-    mean_ca.plot(kind='bar', ax=ax5, color='teal')
-    ax5.set_title("Tỉ lệ bệnh theo số mạch vành bị tắc")
-    ax5.set_xlabel("Số mạch vành bị tắc (ca)")
-    ax5.set_ylabel("Tỉ lệ bệnh tim trung bình")
+
+    # Đảm bảo cột 'ca' là số và 'Có bệnh tim' là 0/1
+    df["ca"] = pd.to_numeric(df["ca"], errors='coerce')
+    df["Có bệnh tim"] = df["num"].apply(lambda x: 1 if x > 0 else 0)
+
+    # Tính tỉ lệ phần trăm người mắc bệnh theo số ca mạch vành tắc
+    rate_by_ca = df.dropna(subset=["ca", "Có bệnh tim"]).groupby("ca")["Có bệnh tim"].mean() * 100
+    rate_by_ca.index = [f"{int(ca)} mạch tắc" for ca in rate_by_ca.index]
+
+    # Vẽ biểu đồ
+    rate_by_ca.plot(kind='bar', ax=ax5, color='teal')
+    ax5.set_title("Tỉ lệ (%) người mắc bệnh tim theo số mạch vành bị tắc")
+    ax5.set_xlabel("Số mạch vành bị tắc")
+    ax5.set_ylabel("Tỉ lệ mắc bệnh (%)")
+    ax5.set_ylim(0, 100)
+
+    # Thêm nhãn trên mỗi cột
+    for i, v in enumerate(rate_by_ca.values):
+        ax5.text(i, v + 1, f"{v:.1f}%", ha='center', va='bottom', fontweight='bold')
+
     fig5.tight_layout()
-    charts.append(("Tỉ lệ bệnh theo số mạch vành bị tắc", plot_to_base64(fig5)))
+    charts.append(("Tỉ lệ (%) người mắc bệnh tim theo số mạch vành bị tắc", plot_to_base64(fig5)))
 
     return render_template("charts.html", charts=charts)
-
-
 
 
 if __name__ == "__main__":
