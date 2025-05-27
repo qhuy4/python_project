@@ -1,7 +1,7 @@
 from operator import truediv
 from math import ceil
 
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, jsonify
 from modules.load_file import load_data, save_data
 import pandas as pd
 import os
@@ -72,7 +72,6 @@ def index():
     # lọc dữ liệu
     for col_name in df.columns:
         filter_value = request.args.get(f'filter_{col_name}', '').strip()
-
         if filter_value:
             if pd.api.types.is_numeric_dtype(df[col_name]):
                 try:
