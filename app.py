@@ -15,6 +15,24 @@ app.secret_key = os.urandom(24)
 # Route Index
 @app.route("/")
 def index():
+    """
+    Trang chủ hiển thị bảng dữ liệu bệnh tim.
+
+    - Hỗ trợ sắp xếp theo cột (sort_by) và thứ tự (asc/desc).
+    - Hỗ trợ tìm kiếm theo giá trị trong cột (search_field, search_value).
+    - Phân trang mỗi trang hiển thị 10 bản ghi.
+    - Giao diện thân thiện với người Việt nhờ đổi tên cột và ánh xạ giá trị rõ ràng.
+
+    Query Parameters:
+        - sort_by (str): Tên cột muốn sắp xếp.
+        - sort_order (str): asc hoặc desc.
+        - search_field (str): Cột để tìm kiếm.
+        - search_value (str): Giá trị tìm kiếm.
+        - page (int): Số trang hiện tại.
+
+    Returns:
+        Rendered HTML trang index với bảng dữ liệu được lọc, sắp xếp và phân trang.
+    """
     df = load_data()
 
     # sort nếu có yêu cầu
@@ -134,6 +152,12 @@ def index():
 
 @app.route("/add")
 def create():
+    """
+        Trang hiển thị form để thêm bản ghi bệnh nhân mới.
+
+        Returns:
+            Rendered HTML của trang tạo mới (create.html).
+    """
     return render_template("create.html")
 
 
@@ -141,6 +165,21 @@ def create():
 # Params "cp": "Đau ngực", chol: Cholesterol, exang:Đau ngực khi gắng sức ,oldpeak :Độ chênh ST
 # return only 1 or 2 or 3
 def compute_num(cp, chol, exang, oldpeak):
+    """
+        Hàm đơn giản để dự đoán bệnh tim (giả lập).
+
+        Dựa vào một số chỉ số: đau ngực (cp), cholesterol,
+        đau ngực khi gắng sức (exang), và độ chênh ST (oldpeak).
+
+        Args:
+            cp (int): Loại đau ngực (1–4).
+            chol (float): Mức cholesterol.
+            exang (int): Có đau ngực khi gắng sức hay không (0/1).
+            oldpeak (float): Độ chênh ST.
+
+        Returns:
+            int: 1 nếu có dấu hiệu bệnh tim, 0 nếu không.
+    """
     score = 0
     if cp >= 2:
         score += 1
@@ -156,6 +195,14 @@ def compute_num(cp, chol, exang, oldpeak):
 # Create function to save data to CSV file.
 @app.route("/create", methods=["POST"])
 def save():
+    """
+       Hàm xử lý khi người dùng gửi form để thêm bệnh nhân mới.
+
+       - Lấy dữ liệu từ biểu mẫu HTML.
+       - Tính toán kết quả bệnh tim (giá trị cột "num") thông qua hàm `compute_num`.
+       - Gộp bản ghi mới với dữ liệu cũ rồi lưu lại vào file CSV.
+       - Chuyển hướng về trang chủ sau khi lưu thành công.
+    """
     age = float(request.form["age"])
     sex = int(request.form["sex"])
     cp = int(request.form["cp"])
@@ -199,6 +246,19 @@ def save():
 # Return HTML Template with record data
 @app.route("/edit/<int:id>")
 def edit(id):
+    """
+       Hiển thị form chỉnh sửa thông tin bệnh nhân theo ID.
+
+       - Tải toàn bộ dữ liệu từ file CSV.
+       - Lấy bản ghi tương ứng với ID được truyền từ URL.
+       - Truyền dữ liệu bản ghi vào form chỉnh sửa (edit.html).
+
+       Tham số:
+           id (int): ID của bản ghi cần chỉnh sửa (lấy từ URL)
+
+       Trả về:
+           Trang HTML chứa form chỉnh sửa đã điền sẵn dữ liệu của bản ghi.
+    """
     df = load_data()
     df2 = df.set_index('ID')
     record = df2.loc[id].to_dict()
@@ -210,6 +270,20 @@ def edit(id):
 # Return HTML Template with record data
 @app.route("/update/<int:id>", methods=["POST"])
 def update(id):
+    """
+        Cập nhật thông tin bản ghi bệnh nhân theo ID.
+
+        - Đọc toàn bộ dữ liệu từ CSV.
+        - Duyệt qua tất cả các cột (trừ ID) và cập nhật giá trị từ form.
+        - Tính lại giá trị 'num' dựa trên các tiêu chí sức khỏe.
+        - Lưu dữ liệu đã cập nhật trở lại vào file CSV.
+
+        Tham số:
+            id (int): ID của bản ghi cần cập nhật (lấy từ URL)
+
+        Trả về:
+            Chuyển hướng về trang chủ sau khi cập nhật thành công.
+    """
     df = load_data()
     for col in df.columns:
         if col == 'ID':
@@ -237,6 +311,20 @@ def update(id):
 # Return Homepage after delete
 @app.route("/delete/<int:id>")
 def delete(id):
+    """
+      Xoá bản ghi bệnh nhân theo ID.
+
+      - Đọc toàn bộ dữ liệu từ file CSV.
+      - Lọc bỏ bản ghi có ID tương ứng.
+      - Reset lại chỉ số ID để đảm bảo liên tục (tăng từ 1).
+      - Ghi dữ liệu mới trở lại file CSV.
+
+      Tham số:
+          id (int): ID của bản ghi cần xoá (lấy từ URL)
+
+      Trả về:
+          Chuyển hướng về trang chủ sau khi xoá thành công.
+    """
     df = load_data()
     df = df[df['ID'] != id].reset_index(drop=True)
     df = df.drop(columns=['ID'])
@@ -247,6 +335,18 @@ def delete(id):
 
 @app.route("/chart")
 def charts():
+    """
+        Sinh các biểu đồ phân tích dữ liệu bệnh tim từ file CSV và render lên trang charts.html.
+
+        Biểu đồ bao gồm:
+        1. Phân bố số lượng người có và không mắc bệnh tim.
+        2. Tỉ lệ (%) người mắc bệnh tim theo giới tính.
+        3. Tuổi trung bình tương ứng với từng mức độ bệnh tim.
+        4. Tỉ lệ (%) người mắc bệnh tim theo số mạch vành bị tắc.
+
+        Trả về:
+            render_template("charts.html") với danh sách biểu đồ dưới dạng ảnh base64.
+    """
     df = load_data()
 
     # Map các giá trị để hiển thị tiếng Việt
