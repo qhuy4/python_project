@@ -102,10 +102,6 @@ def index():
     search_value = request.args.get('search_value', '').strip()
 
     if search_field and search_value:
-        col_map_reversed = {v: k for k, v in cols.items()}
-        internal_col_name = col_map_reversed.get(search_field)
-
-        if search_field and search_value:
             if search_field in df.columns:
                 df = df[df[search_field].astype(str).str.contains(search_value, case=False, na=False)]
 
@@ -119,7 +115,7 @@ def index():
     start = (page - 1) * per_page
     end = start + per_page
 
-    df = df.rename(columns=cols)
+    # df = df.rename(columns=cols)
 
     df_page = df.iloc[start:end]
 
@@ -329,19 +325,8 @@ def charts():
     fig3.tight_layout()
     charts.append(("Tuổi trung bình theo mức độ bệnh tim", plot_to_base64(fig3)))
 
-    # Chart 4: Boxplot nhịp tim tối đa theo mức độ bệnh tim
-    fig4, ax4 = plt.subplots()
-    df.boxplot(column="thalach", by="num", ax=ax4)
-    ax4.set_title("Phân bố nhịp tim tối đa theo mức độ bệnh tim")
-    ax4.set_xlabel("Mức độ bệnh tim")
-    ax4.set_ylabel("Nhịp tim tối đa (thalach)")
-    ax4.set_xticklabels([num_map.get(int(i.get_text()), i.get_text()) for i in ax4.get_xticklabels()])
-    fig4.suptitle("")  # Loại bỏ tiêu đề mặc định
-    fig4.tight_layout()
-    charts.append(("Nhịp tim theo mức độ bệnh tim", plot_to_base64(fig4)))
-
-    # Chart 5: Tỉ lệ mắc bệnh tim theo số mạch vành bị tắc
-    # Chart 5: Tỉ lệ (%) người mắc bệnh tim theo số mạch vành bị tắc
+    # Chart 4: Tỉ lệ mắc bệnh tim theo số mạch vành bị tắc
+    # Chart 4: Tỉ lệ (%) người mắc bệnh tim theo số mạch vành bị tắc
     fig5, ax5 = plt.subplots()
 
     # Đảm bảo cột 'ca' là số và 'Có bệnh tim' là 0/1

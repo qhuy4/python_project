@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
   <meta charset="UTF-8">
   <title>Thống kê bệnh tim</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
-      background-color: #f8f9fa;
+      background-color: #f4f6f9;
+      font-family: 'Segoe UI', sans-serif;
     }
     .chart-card {
       margin-bottom: 2rem;
@@ -17,28 +18,58 @@
       display: block;
       margin: 0 auto;
     }
+    .card-header {
+      background-color: #007bff;
+      color: white;
+    }
+    .chart-desc {
+      font-size: 0.95rem;
+      color: #555;
+      margin-top: 0.75rem;
+    }
+    .title-section {
+      margin-bottom: 2rem;
+    }
   </style>
 </head>
 <body>
   <div class="container py-5">
-    <h1 class="text-center mb-4">Thống kê dữ liệu bệnh tim</h1>
+    <div class="title-section text-center">
+      <h1 class="fw-bold">Thống kê dữ liệu bệnh tim</h1>
+      <p class="text-muted">Các biểu đồ dưới đây giúp bạn hiểu rõ tình trạng, nguy cơ và phân bố bệnh tim trong tập dữ liệu.</p>
+    </div>
 
     <div class="row">
       {% for title, chart in charts %}
         <div class="col-md-6 chart-card">
           <div class="card shadow-sm">
-            <div class="card-header text-bg-primary">
-              <h5 class="card-title mb-0 text-white">{{ title }}</h5>
+            <div class="card-header">
+              <h5 class="card-title mb-0">{{ title }}</h5>
             </div>
             <div class="card-body">
               <img src="data:image/png;base64,{{ chart }}" alt="{{ title }}" class="chart-img">
+              <p class="chart-desc">
+                {% if title == "Tình trạng mắc bệnh tim" %}
+                  Số người mắc và không mắc bệnh tim trong dữ liệu.
+                {% elif title == "Tỉ lệ (%) người mắc bệnh tim theo giới tính" %}
+                  Cho biết % người mắc bệnh tim ở từng giới tính (Nam/Nữ).
+                {% elif title == "Tuổi trung bình theo mức độ bệnh tim" %}
+                  Trung bình tuổi của người bệnh theo từng mức độ nặng nhẹ.
+                {% elif title == "Nhịp tim theo mức độ bệnh tim" %}
+                  Phân bố nhịp tim tối đa theo từng mức độ bệnh tim.
+                {% elif title == "Tỉ lệ (%) người mắc bệnh tim theo số mạch vành bị tắc" %}
+                  Tỉ lệ mắc bệnh tim theo số lượng mạch vành bị tắc (0–3).
+                {% else %}
+                  Biểu đồ minh họa dữ liệu liên quan đến bệnh tim.
+                {% endif %}
+              </p>
             </div>
           </div>
         </div>
       {% endfor %}
     </div>
 
-    <div class="text-center mt-4">
+    <div class="text-center mt-5">
       <a href="/" class="btn btn-outline-primary">← Quay lại trang chính</a>
     </div>
   </div>
