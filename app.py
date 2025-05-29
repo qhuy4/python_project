@@ -371,21 +371,17 @@ def charts():
     # Tạo cột Có bệnh tim (0/1)
     df["Có bệnh tim"] = df["num"].apply(lambda x: 0 if x == 0 else 1)
 
-    # Chart 1: Phân bố người có bệnh tim vs không có bệnh
     fig1, ax1 = plt.subplots(figsize=(6, 5))
     counts = df["Có bệnh tim"].value_counts().sort_index()
     counts.index = ["Không mắc bệnh tim", "Mắc bệnh tim"]
-    bars = ax1.bar(counts.index, counts.values, color=['green', 'red'])
+    ax1.bar(counts.index, counts.values, color=['green', 'red'])
     ax1.set_title("Tình trạng mắc bệnh tim trong dữ liệu")
     ax1.set_ylabel("Số lượng bệnh nhân")
     ax1.set_xlabel("Tình trạng")
-    for bar in bars:
-        height = bar.get_height()
-        ax1.annotate(f'{int(height)}',
-                     xy=(bar.get_x() + bar.get_width() / 2, height),
-                     xytext=(0, 5),
-                     textcoords="offset points",
-                     ha='center', va='bottom', fontsize=10, fontweight='bold')
+
+    for i, v in enumerate(counts.values):
+        ax1.text(i, v + 1, f"{int(v)}", ha='center', va='bottom', fontweight='bold')
+
     fig1.tight_layout()
     charts.append(("Tình trạng mắc bệnh tim", plot_to_base64(fig1)))
 
@@ -415,14 +411,13 @@ def charts():
     charts.append(("Tỉ lệ (%) người mắc bệnh tim theo giới tính", plot_to_base64(fig2)))
 
     # Chart 3: Tuổi trung bình tương ứng với mức độ bệnh tim
-    fig3, ax3 = plt.subplots()
+    fig3, ax3 = plt.subplots() # tạo 1 vùng vẻ biểu đồ
     mean_age = df.dropna(subset=["num", "age"]).groupby("num")["age"].mean()
     mean_age.index = mean_age.index.map(num_map).fillna("Không rõ")
     mean_age.plot(kind='bar', ax=ax3, color='purple')
     ax3.set_title("Tuổi trung bình theo mức độ bệnh tim")
     ax3.set_xlabel("Mức độ bệnh tim")
     ax3.set_ylabel("Tuổi trung bình (năm)")
-    fig3.tight_layout()
     charts.append(("Tuổi trung bình theo mức độ bệnh tim", plot_to_base64(fig3)))
 
     # Chart 4: Tỉ lệ mắc bệnh tim theo số mạch vành bị tắc
